@@ -1,0 +1,7 @@
+.vscode
+.cph
+.env
+*.exe
+.vscode
+*.in
+out.txt

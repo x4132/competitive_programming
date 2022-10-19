@@ -3,7 +3,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 
-public class Main {
+public class S3_New {
     public static void main(String[] args) throws Exception {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         String[] nm = reader.readLine().trim().split(" ");

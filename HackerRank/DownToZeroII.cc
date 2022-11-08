@@ -2,92 +2,24 @@
 
 using namespace std;
 
-string ltrim(const string &);
-string rtrim(const string &);
+int main(void) {
+    int q;
+    cin >> q;
+    vector<int> cache;
+    cache.push_back(0);
+    for (int i = 1; i <= 1000000; i++) {
+        cache.push_back(cache[i - 1] + 1);
 
-/*
- * Complete the 'downToZero' function below.
- *
- * The function is expected to return an INTEGER.
- * The function accepts INTEGER n as parameter.
- */
-
-int downToZero(int n)
-{
-
-    int moves = 0;
-    while (n != 0)
-    {
-        bool factored = false;
-        moves++;
-        for (int i = (int) ceil(sqrt(n)); i >= 2; i--)
-        {
-            if (n % i == 0)
-            {
-                int prevn = n;
-                n = max(i, (n / i));
-
-                if (n == prevn) {
-                    n--;
-                }
-
-                factored = true;
-                break;
+        for (int x = 2; x * x <= i; x++) {
+            if (i % x == 0) {
+                cache[i] = min(cache[i], cache[i / x] + 1);
             }
         }
-
-        if (!factored) {
-            n--;
-        }
     }
 
-    return moves;
-}
-
-int main()
-{
-    ofstream fout(getenv("OUTPUT_PATH"));
-
-    string q_temp;
-    getline(cin, q_temp);
-
-    int q = stoi(ltrim(rtrim(q_temp)));
-
-    for (int q_itr = 0; q_itr < q; q_itr++)
-    {
-        string n_temp;
-        getline(cin, n_temp);
-
-        int n = stoi(ltrim(rtrim(n_temp)));
-
-        int result = downToZero(n);
-
-        fout << result << "\n";
+    for (int i = 0; i < q; i++) {
+        int n;
+        cin >> n;
+        cout << cache[n] << endl;
     }
-
-    fout.close();
-
-    return 0;
-}
-
-string ltrim(const string &str)
-{
-    string s(str);
-
-    s.erase(
-        s.begin(),
-        find_if(s.begin(), s.end(), not1(ptr_fun<int, int>(isspace))));
-
-    return s;
-}
-
-string rtrim(const string &str)
-{
-    string s(str);
-
-    s.erase(
-        find_if(s.rbegin(), s.rend(), not1(ptr_fun<int, int>(isspace))).base(),
-        s.end());
-
-    return s;
 }

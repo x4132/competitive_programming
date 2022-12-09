@@ -9,7 +9,7 @@ int main(void)
     int N, M;
     cin >> N >> M;
 
-    vector<vector<int>> taller(N, vector<int>(N));
+    vector<vector<int>> taller(N, vector<int>());
 
     for (int i = 0; i < M; i++) {
         int x, y;
@@ -20,42 +20,21 @@ int main(void)
 
     int p, q;
     cin >> p >> q;
+    p--;
+    q--;
 
-    queue<int> hasLarger;
-    hasLarger.push(p);
+    queue<int> hasShorter;
+    hasShorter.push(p);
 
     bool qTaller = false;
     bool pTaller = false;
 
     vector<bool> visited(N, false);
-    while (!hasLarger.empty()) {
-        int cur = hasLarger.front();
-        hasLarger.pop();
+    while (!hasShorter.empty()) {
+        int cur = hasShorter.front();
+        hasShorter.pop();
 
         if (cur == q) {
-            qTaller = true;
-            break;
-        }
-
-        if (!visited[cur]) {
-            visited[cur] = true;
-
-            for (int i : taller[cur]) {
-                if (!visited[i]) {
-                    hasLarger.push(i);
-                }
-            }
-        }
-    }
-
-    hasLarger = {};
-    visited.assign(visited.size(), false);
-    hasLarger.push(q);
-    while (!hasLarger.empty()) {
-        int cur = hasLarger.front();
-        hasLarger.pop();
-
-        if (cur == p) {
             pTaller = true;
             break;
         }
@@ -65,7 +44,30 @@ int main(void)
 
             for (int i : taller[cur]) {
                 if (!visited[i]) {
-                    hasLarger.push(i);
+                    hasShorter.push(i);
+                }
+            }
+        }
+    }
+
+    hasShorter = {};
+    visited.assign(visited.size(), false);
+    hasShorter.push(q);
+    while (!hasShorter.empty()) {
+        int cur = hasShorter.front();
+        hasShorter.pop();
+
+        if (cur == p) {
+            qTaller = true;
+            break;
+        }
+
+        if (!visited[cur]) {
+            visited[cur] = true;
+
+            for (int i : taller[cur]) {
+                if (!visited[i]) {
+                    hasShorter.push(i);
                 }
             }
         }

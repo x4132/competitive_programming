@@ -2,207 +2,136 @@
 
 using namespace std;
 
-enum nodeType
-{
-    wall,
-    blank,
-    camera,
-    start,
-    left,
-    right,
-    up,
-    down
-};
+enum nodeType { wall, blank, camera, start, left, right, up, down };
 
-struct node
-{
+struct node {
     nodeType type;
     pair<int, int> to;
     bool visited;
+    bool underWatch;
     int dist;
 
     int x;
     int y;
 };
 
-int main(void)
-{
-    int N, M;
+bool isConveyor(node *n) {
+    if (n->type == nodeType::up || n->type == nodeType::down ||
+        n->type == nodeType::left || n->type == nodeType::right) {
+        return true;
+    }
 
+    return false;
+}
+
+int main(void) {
+    int N, M;
     cin >> N >> M;
 
-    vector<node> emptySpots;
-    vector<node> cameras;
-    vector<vector<node>> grid(N, vector<node>(M));
-    node start;
+    unordered_map<char, nodeType> ctNT({{'W', nodeType::wall},
+                                        {'.', nodeType::blank},
+                                        {'C', nodeType::camera},
+                                        {'S', nodeType::start},
+                                        {'L', nodeType::left},
+                                        {'R', nodeType::right},
+                                        {'U', nodeType::up},
+                                        {'D', nodeType::down}});
 
-    unordered_map<char, nodeType> charToNode({{'W', nodeType::wall}, {'.', nodeType::blank}, {'C', nodeType::camera}, {'S', nodeType::start}, {'L', nodeType::left}, {'R', nodeType::right}, {'U', nodeType::up}, {'D', nodeType::down}});
+    vector<vector<node *>> grid(N, vector<node *>(M));
 
-    for (int y = 0; y < N; y++)
-    {
+    vector<node *> cameras;
+    vector<node *> blanks;
+
+    node *start;
+
+    for (int y = 0; y < N; y++) {
         string row;
+
         cin >> row;
 
-        for (int x = 0; x < M; x++)
-        {
-            node toAdd;
-            toAdd.type = charToNode[row[x]];
-            toAdd.visited = false;
-            toAdd.dist = -1;
-            toAdd.x = x;
-            toAdd.y = y;
-            toAdd.to = {-1, -1};
+        for (int x = 0; x < M; x++) {
+            node *toAdd = new node();
+            toAdd->type = ctNT[row[x]];
+            toAdd->to = {-1, -1};
+            toAdd->visited = false;
+            toAdd->underWatch = false;
+            toAdd->dist = -1;
 
-            if (toAdd.type == nodeType::start)
-            {
-                start = toAdd;
-            }
-            else if (toAdd.type == nodeType::camera)
-            {
-                cameras.push_back(toAdd);
-            }
-            else if (toAdd.type == nodeType::blank)
-            {
-                emptySpots.push_back(toAdd);
-            }
+            toAdd->x = x;
+            toAdd->y = y;
 
             grid[y][x] = toAdd;
+            if (toAdd->type == nodeType::camera) {
+                cameras.push_back(toAdd);
+            } else if (toAdd->type == nodeType::blank) {
+                cameras.push_back(toAdd);
+            } else if (toAdd->type == nodeType::start) {
+                start = toAdd;
+            }
         }
     }
 
-    for (int c = 0; c < cameras.size(); c++)
-    {
-        node cur = cameras[c];
+    for (auto c : cameras) {
+        int pos = c->x;
 
-        int pos = cur.x;
-        while (grid[cur.y][pos].type != nodeType::wall)
-        {
-            if (grid[cur.y][pos].type != nodeType::up && grid[cur.y][pos].type != nodeType::down && grid[cur.y][pos].type != nodeType::left && grid[cur.y][pos].type != nodeType::right)
-            {
-                node& toAdd = grid[cur.y][pos];
-                toAdd.type = nodeType::wall;
+        while (grid[c->y][pos]->type != nodeType::wall) {
+            if (!isConveyor(grid[c->y][pos])) {
+                grid[c->y][pos]->underWatch = true;
             }
 
             pos++;
         }
 
-        pos = cur.x - 1;
-        while (grid[cur.y][pos].type != nodeType::wall)
-        {
-            if (grid[cur.y][pos].type != nodeType::up && grid[cur.y][pos].type != nodeType::down && grid[cur.y][pos].type != nodeType::left && grid[cur.y][pos].type != nodeType::right)
-            {
-                node& toAdd = grid[cur.y][pos];
-                toAdd.type = nodeType::wall;
+        pos = c->x - 1;
+        while (grid[c->y][pos]->type != nodeType::wall) {
+            if (!isConveyor(grid[c->y][pos])) {
+                grid[c->y][pos]->underWatch = true;
             }
 
             pos--;
         }
 
-        pos = cur.y + 1;
-        while (grid[pos][cur.x].type != nodeType::wall)
-        {
-            if (grid[pos][cur.x].type != nodeType::up && grid[pos][cur.x].type != nodeType::down && grid[pos][cur.x].type != nodeType::left && grid[pos][cur.x].type != nodeType::right)
-            {
-                node& toAdd = grid[pos][cur.y];
-                toAdd.type = nodeType::wall;
+        pos = c->y;
+        while (grid[pos][c->x]->type != nodeType::wall) {
+            if (!isConveyor(grid[pos][c->x])) {
+                grid[pos][c->x]->underWatch = true;
             }
 
             pos++;
         }
 
-        pos = cur.y - 1;
-        while (grid[pos][cur.x].type != nodeType::wall)
-        {
-            if (grid[pos][cur.x].type != nodeType::up && grid[pos][cur.x].type != nodeType::down && grid[pos][cur.x].type != nodeType::left && grid[pos][cur.x].type != nodeType::right)
-            {
-                node& toAdd = grid[pos][cur.y];
-                toAdd.type = nodeType::wall;
+        pos = c->y - 1;
+        while (grid[pos][c->x]->type != nodeType::wall) {
+            if (!isConveyor(grid[pos][c->x])) {
+                grid[pos][c->x]->underWatch = true;
             }
 
             pos--;
         }
     }
 
-    queue<node> bfsq;
-    if (grid[start.y][start.x].type != nodeType::wall)
-    {
-        start.dist = 0;
+    queue<node *> bfsq;
+    if (!start->underWatch) {
+        start->dist = 0;
+        start->visited = true;
         bfsq.push(start);
     }
 
-    while (!bfsq.empty())
-    {
-        node cur = bfsq.front();
+    while (!bfsq.empty()) {
+        node *cur = bfsq.front();
         bfsq.pop();
 
-        vector<node> toCache;
-        while (cur.type == nodeType::up || cur.type == nodeType::down || cur.type == nodeType::left || cur.type == nodeType::right)
-        {
-            if (cur.to != std::make_pair(-1, -1))
-            {
-                cur = grid[cur.to.first][cur.to.second];
+        switch(cur->type) {
+            case nodeType::blank:
+            case nodeType::start:
+                if (!grid[cur->y][cur->x + 1]->visited && !grid[cur->y][cur->x + 1]->underWatch && grid[cur->y][cur->x + 1]->type != nodeType::wall) {
+                    grid[cur->y][cur->x + 1]->visited = true;
+                    grid[cur->y][cur->x + 1]->dist = cur->dist + 1;
+                    bfsq.push(grid[cur->y][cur->x + 1]);
+                }
                 break;
-            }
-
-            switch (cur.type)
-            {
-            case nodeType::up:
-                cur = grid[cur.y + 1][cur.x];
-                break;
-            case nodeType::down:
-                cur = grid[cur.y - 1][cur.x];
-                break;
-            case nodeType::left:
-                cur = grid[cur.y][cur.x - 1];
-                break;
-            case nodeType::right:
-                cur = grid[cur.y][cur.x + 1];
-                break;
-            }
-
-            cur.visited = true;
-
-            toCache.push_back(cur);
-        }
-
-        for (node i : toCache)
-        {
-            grid[i.x][i.y].to = {cur.x, cur.y};
-        }
-
-        if (grid[cur.y][cur.x + 1].visited == false && grid[cur.y][cur.x + 1].type != nodeType::wall)
-        {
-            grid[cur.y][cur.x + 1].visited = true;
-            grid[cur.y][cur.x + 1].dist = cur.dist + 1;
-            bfsq.push(grid[cur.y][cur.x + 1]);
-        }
-
-        if (grid[cur.y][cur.x - 1].visited == false && grid[cur.y][cur.x - 1].type != nodeType::wall)
-        {
-            grid[cur.y][cur.x - 1].visited = true;
-            grid[cur.y][cur.x - 1].dist = cur.dist + 1;
-            bfsq.push(grid[cur.y][cur.x - 1]);
-        }
-
-        if (grid[cur.y + 1][cur.x].visited == false && grid[cur.y + 1][cur.x].type != nodeType::wall)
-        {
-            grid[cur.y + 1][cur.x].visited = true;
-            grid[cur.y + 1][cur.x].dist = cur.dist + 1;
-            bfsq.push(grid[cur.y + 1][cur.x]);
-        }
-
-        if (grid[cur.y - 1][cur.x].visited == false && grid[cur.y - 1][cur.x].type != nodeType::wall)
-        {
-            grid[cur.y - 1][cur.x].visited = true;
-            grid[cur.y - 1][cur.x].dist = cur.dist + 1;
-            bfsq.push(grid[cur.y - 1][cur.x]);
         }
     }
 
-    for (node i : emptySpots)
-    {
-        node cur = grid[i.y][i.x];
-
-        cout << cur.dist << endl;
-    }
+    return 0;
 }

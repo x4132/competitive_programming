@@ -64,7 +64,7 @@ int main(void) {
         nodes[b].children.insert(a);
     }
 
-    dfs(nodes[0]);
+    dfs(nodes[phoNodes[0]]);
 
     for (auto i = nodes.begin(); i != nodes.end(); i++) {
         (*i).second.dist = 0;
@@ -74,6 +74,7 @@ int main(void) {
     stack<int> nodestk;
     nodestk.push(phoNodes[0]);
     nodes[phoNodes[0]].dist = 0;
+    nodes[phoNodes[0]].visited = true;
 
     int maxIndex = 0;
     int maxDist = 0;
@@ -108,6 +109,7 @@ int main(void) {
 
     nodestk.push(maxIndex);
     nodes[maxIndex].dist = 0;
+    nodes[maxIndex].visited = true;
 
     maxIndex = 0;
     maxDist = 0;

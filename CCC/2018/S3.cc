@@ -2,7 +2,16 @@
 
 using namespace std;
 
-enum nodeType { wall, blank, camera, start, left, right, up, down };
+enum nodeType {
+    wall,
+    blank,
+    camera,
+    start,
+    left,
+    right,
+    up,
+    down
+};
 
 struct node {
     nodeType type;
@@ -18,6 +27,14 @@ struct node {
 bool isConveyor(node *n) {
     if (n->type == nodeType::up || n->type == nodeType::down ||
         n->type == nodeType::left || n->type == nodeType::right) {
+        return true;
+    }
+
+    return false;
+}
+
+bool isValid(node *cur, node *next) {
+    if (next->type != nodeType::camera && next->type != nodeType::wall && (!next->visited || (cur->type == nodeType::blank && cur->dist + 1 < next->dist) || (cur->type != nodeType::blank && cur->dist < next->dist)) && !next->underWatch) {
         return true;
     }
 
@@ -64,7 +81,7 @@ int main(void) {
             if (toAdd->type == nodeType::camera) {
                 cameras.push_back(toAdd);
             } else if (toAdd->type == nodeType::blank) {
-                cameras.push_back(toAdd);
+                blanks.push_back(toAdd);
             } else if (toAdd->type == nodeType::start) {
                 start = toAdd;
             }
@@ -121,16 +138,66 @@ int main(void) {
         node *cur = bfsq.front();
         bfsq.pop();
 
-        switch(cur->type) {
-            case nodeType::blank:
-            case nodeType::start:
-                if (!grid[cur->y][cur->x + 1]->visited && !grid[cur->y][cur->x + 1]->underWatch && grid[cur->y][cur->x + 1]->type != nodeType::wall) {
-                    grid[cur->y][cur->x + 1]->visited = true;
-                    grid[cur->y][cur->x + 1]->dist = cur->dist + 1;
-                    bfsq.push(grid[cur->y][cur->x + 1]);
-                }
-                break;
+        switch (cur->type) {
+        case nodeType::blank:
+        case nodeType::start:
+            if (isValid(cur, grid[cur->y][cur->x + 1])) {
+                grid[cur->y][cur->x + 1]->visited = true;
+                grid[cur->y][cur->x + 1]->dist = cur->dist + 1;
+                bfsq.push(grid[cur->y][cur->x + 1]);
+            }
+
+            if (isValid(cur, grid[cur->y][cur->x - 1])) {
+                grid[cur->y][cur->x - 1]->visited = true;
+                grid[cur->y][cur->x - 1]->dist = cur->dist + 1;
+                bfsq.push(grid[cur->y][cur->x - 1]);
+            }
+
+            if (isValid(cur, grid[cur->y + 1][cur->x])) {
+                grid[cur->y + 1][cur->x]->visited = true;
+                grid[cur->y + 1][cur->x]->dist = cur->dist + 1;
+                bfsq.push(grid[cur->y + 1][cur->x]);
+            }
+
+            if (isValid(cur, grid[cur->y - 1][cur->x])) {
+                grid[cur->y - 1][cur->x]->visited = true;
+                grid[cur->y - 1][cur->x]->dist = cur->dist + 1;
+                bfsq.push(grid[cur->y - 1][cur->x]);
+            }
+            break;
+        case nodeType::up:
+            if (isValid(cur, grid[cur->y - 1][cur->x])) {
+                grid[cur->y - 1][cur->x]->visited = true;
+                grid[cur->y - 1][cur->x]->dist = cur->dist;
+                bfsq.push(grid[cur->y - 1][cur->x]);
+            }
+            break;
+        case nodeType::down:
+            if (isValid(cur, grid[cur->y + 1][cur->x])) {
+                grid[cur->y + 1][cur->x]->visited = true;
+                grid[cur->y + 1][cur->x]->dist = cur->dist;
+                bfsq.push(grid[cur->y + 1][cur->x]);
+            }
+            break;
+        case nodeType::left:
+            if (isValid(cur, grid[cur->y][cur->x - 1])) {
+                grid[cur->y][cur->x - 1]->visited = true;
+                grid[cur->y][cur->x - 1]->dist = cur->dist;
+                bfsq.push(grid[cur->y][cur->x - 1]);
+            }
+            break;
+        case nodeType::right:
+            if (isValid(cur, grid[cur->y][cur->x + 1])) {
+                grid[cur->y][cur->x + 1]->visited = true;
+                grid[cur->y][cur->x + 1]->dist = cur->dist;
+                bfsq.push(grid[cur->y][cur->x - 1]);
+            }
+            break;
         }
+    }
+
+    for (node *i : blanks) {
+        cout << i->dist << endl;
     }
 
     return 0;

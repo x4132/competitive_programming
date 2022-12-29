@@ -14,16 +14,16 @@ vector<tuple<int, int, long long>> changes;
 int N;
 long long avg = 0;
 
-int getDisparity(barn *cur, barn *root) {
+void getDisparity(barn *cur, barn *root) {
     long long sum = cur->bales - avg;
     for (auto i : cur->children) {
         if (i != root) {
-            sum += getDisparity(i, cur);
+            getDisparity(i, cur);
+            sum += i->disparity;
         }
     }
 
     cur->disparity = sum;
-    return sum;
 }
 
 void solve(barn *cur, barn *root) {

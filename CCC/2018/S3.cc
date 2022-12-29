@@ -190,7 +190,7 @@ int main(void) {
             if (isValid(cur, grid[cur->y][cur->x + 1])) {
                 grid[cur->y][cur->x + 1]->visited = true;
                 grid[cur->y][cur->x + 1]->dist = cur->dist;
-                bfsq.push(grid[cur->y][cur->x - 1]);
+                bfsq.push(grid[cur->y][cur->x + 1]);
             }
             break;
         }

@@ -4,7 +4,6 @@ using namespace std;
 
 int main(void) {
     int N, M, K;
-<<<<<<< HEAD
     cin >> N >> M >> K;
 
     if (K < N) {
@@ -19,8 +18,4 @@ int main(void) {
     while (currentSamples < K - 1) {
         vals[index * 2 + 1] = 2;
     }
-=======
-
-    cin >> N >> M >> K;
->>>>>>> fa1b8e971b8d93b251f4ef7693ed5456aa6dc1de
 }

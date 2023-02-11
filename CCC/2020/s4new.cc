@@ -2,72 +2,63 @@
 
 using namespace std;
 
-int prefixQuery(int start, int numDigits, vector<int> prefixes) {
-    if (numDigits == 0) {
+vector<vector<int>> prefixArr;
+int n;
+
+int prefixQuery(int start, int len, int arr) {
+    if (len <= 0) {
         return 0;
     }
 
-    int output = prefixes[min(start + numDigits, (int) prefixes.size()) - 1] - (start == 0 ? 0 : prefixes[min((int) prefixes.size(), start) - 1]);
-    if (start + numDigits > prefixes.size()) {
-        output += prefixes[(start + numDigits - prefixes.size()) - 1];
+    int result = 0;
+    start %= n; // circle lol
+    int startVal = (start == 0 ? 0 : prefixArr[start - 1][arr]);
+    int end = start + len - 1;
+
+    if (end >= n) {
+        result = prefixArr[n - 1][arr] - startVal;
+        result += prefixArr[end % n][arr];
+    } else {
+        result = prefixArr[end][arr] - startVal;
     }
 
-    return output;
+    return result;
 }
 
 int main(void) {
+    ios_base::sync_with_stdio(false);
+    cin.tie(0);
+
     string in;
     cin >> in;
-    vector<int> sumA(in.size());
-    vector<int> sumB(in.size());
-    vector<int> sumC(in.size());
+    n = in.size();
 
-    int prefixA = 0;
-    int prefixB = 0;
-    int prefixC = 0;
+    prefixArr.resize(n);
+    fill(prefixArr.begin(), prefixArr.end(), vector<int>{0, 0, 0});
+    prefixArr[0][in[0] - 'A'] = 1;
 
-    int Astart = -1;
-
-    for (int i = 0; i < in.size(); i++) {
-        if (in[i] == 'A') {
-            prefixA++;
-        } else if (in[i] == 'B') {
-            prefixB++;
-        } else {
-            prefixC++;
-        }
-
-        sumA[i] = prefixA;
-        sumB[i] = prefixB;
-        sumC[i] = prefixC;
-
-        if (Astart == -1 && in[i] == 'A') {
-            Astart = i;
-        }
+    for (int i = 1; i < n; i++) {
+        prefixArr[i] = prefixArr[i - 1];
+        prefixArr[i][in[i] - 'A']++;
     }
 
-    int countA = sumA[in.size() - 1];
-    int countB = sumB[in.size() - 1];
-    int countC = sumC[in.size() - 1];
+    int minMoves = n; // n is obviously larger than minMoves;
 
-    if (Astart == -1) {
-        Astart = 0;
-    }
+    int Acount = prefixArr[n - 1][0], Bcount = prefixArr[n - 1][1], Ccount = prefixArr[n - 1][2];
+    for (int i = 0; i < n; i++) {
+        int Na = prefixQuery(i, Acount, 1) + prefixQuery(i, Acount, 2);
+        int Nb = prefixQuery(i + Acount, Bcount, 0) + prefixQuery(i + Acount, Bcount, 2);
 
-    int minMoves = in.size();
+        int Sab = prefixQuery(i, Acount, 1);
+        int Sba = prefixQuery(i + Acount, Bcount, 0);
 
-    string in2 = in + in;
-    for (int i = 0; i < in.size(); i++) {
-        int Na = prefixQuery(i, countA, sumB) + prefixQuery(i, countA, sumC);
-        int Nb = prefixQuery(i + countA, countB, sumA) + prefixQuery(i + countA, countB, sumC); // b first
-        int Nc = prefixQuery(i + countA, countC, sumA) + prefixQuery(i + countA, countC, sumB); // c first
+        minMoves = min(minMoves, (Na + Nb) - min(Sab, Sba));
+        
+        int Nc = prefixQuery(i + Acount, Ccount, 0) + prefixQuery(i + Acount, Ccount, 1);
+        int Sca = prefixQuery(i + Acount, Ccount, 0);
+        int Sac = prefixQuery(i, Acount, 2);
 
-        int Sab = prefixQuery(i, countA, sumB);
-        int Sba = prefixQuery(i + countA, countB, sumA);
-        int Sca = prefixQuery(i + countA, countC, sumA);
-
-        minMoves = min(minMoves, Na + Nb - min(Sab, Sba));
-        minMoves = min(minMoves, Na + Nc - min(Sab, Sca));
+        minMoves = min(minMoves, (Na + Nc) - min(Sac, Sca));
     }
 
     cout << minMoves << endl;

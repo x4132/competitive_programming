@@ -1,20 +1,21 @@
-#include <bits/stdc++.h>
-
+#include <vector>
 using namespace std;
 
 class Solution {
-public:
-    int rob(vector<int>& nums) {
-        vector<int> dp = nums;
+  public:
+    int rob(vector<int> &nums) {
+        if (nums.size() == 0) {
+            return 0;
+        }
+        int maxPrev = 0;
+        int last = nums[0];
 
-        for (int i = 0; i < nums.size(); i++) {
-            for (int x = 0; x < i - 1; x++) {
-                if (dp[x] + nums[i] > dp[i]) {
-                    dp[i] = dp[x] + nums[i];
-                }
-            }
+        for (int i = 1; i < nums.size(); i++) {
+            int cur = maxPrev + nums[i];
+            maxPrev = max(maxPrev, last);
+            last = cur;
         }
 
-        return *max_element(dp.begin(), dp.end());
+        return max(maxPrev, last);
     }
 };
